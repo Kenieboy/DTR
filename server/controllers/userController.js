@@ -6,11 +6,37 @@ import bcrypt from "bcrypt";
 const router = express.Router();
 
 router.get("/", (req, res) => {
-  res.json("default user controller....");
+  const sql = "SELECT * FROM employees";
+  db.query(sql, (err, data) => {
+    res.json(data);
+  });
 });
 
 router.get("/:id", (req, res) => {
-  res.json(`users request param: ${req.params.id}`);
+  // Convert req.params.id to an integer
+  const userId = parseInt(req.params.id);
+
+  // Check if userId is a valid number
+  if (isNaN(userId)) {
+    return res.status(400).json({ error: "Invalid user ID" });
+  }
+
+  const sql = "SELECT * FROM users WHERE user_id = ?";
+  const value = [userId];
+
+  // res.json(value); // Uncomment this line for debugging purposes
+
+  db.query(sql, value, (err, data) => {
+    if (err) {
+      console.error("Error executing SQL query:", err);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+
+    if (data.length === 0) {
+      return res.json("No Data...");
+    }
+    return res.json(data);
+  });
 });
 
 router.post("/", (req, res) => {
